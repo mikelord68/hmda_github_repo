@@ -5,8 +5,9 @@ async function fetchInstitutions() {
     const data = await res.json();
     const select = document.getElementById("lenderDropdown");
     select.innerHTML = "";
-    data.filers.sort((a, b) => a.name.localeCompare(b.name));
-    data.filers.forEach(filer => {
+   data.institutions.sort((a, b) => a.name.localeCompare(b.name));
+data.institutions.forEach(filer => {
+
       const opt = document.createElement("option");
       opt.value = filer.lei;
       opt.textContent = filer.name;
