@@ -1,11 +1,14 @@
-export async function handler(event, context) {
+const fetch = require("node-fetch"); // or global fetch if using newer Netlify Node env
+
+exports.handler = async function(event, context, callback) {
   const lei = event.queryStringParameters.lei;
   if (!lei) {
-    return {
+    return callback(null, {
       statusCode: 400,
-      body: JSON.stringify({ error: "Missing LEI parameter." })
-    };
+      body: "Missing LEI parameter."
+    });
   }
+
   const url = `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?leis=${lei}&years=2024`;
   console.log("Fetching LAR for LEI:", lei);
   console.log("Requesting URL:", url);
@@ -13,25 +16,27 @@ export async function handler(event, context) {
   try {
     const res = await fetch(url);
     if (!res.ok) {
-      return {
+      return callback(null, {
         statusCode: res.status,
         body: `Failed to fetch LAR data: ${res.statusText}`
-      };
+      });
     }
-    const text = await res.text();
-    return {
+
+    const csv = await res.text();
+
+    return callback(null, {
       statusCode: 200,
-      body: text,
       headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "text/plain"
-      }
-    };
+        "Content-Type": "text/csv",
+        "Access-Control-Allow-Origin": "*"
+      },
+      body: csv
+    });
   } catch (err) {
     console.error("Fetch error:", err);
-    return {
+    return callback(null, {
       statusCode: 500,
       body: "Server error while fetching LAR data."
-    };
+    });
   }
-}
+};
