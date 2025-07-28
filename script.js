@@ -137,13 +137,12 @@ function buildLARSummary(data) {
     return html;
   };
 
-return `
-  <h3>LAR Summary (${total} records)</h3>
-  ${summarize("Action Taken", actionTakenCounts, actionTakenLabels)}
-  ${summarize("Loan Purposes", loanPurposeCounts, loanPurposeLabels)}
-  ${summarize("Loan Types", loanTypeCounts, loanTypeLabels)}
-`;
-
+  return `
+    <h3>LAR Summary (${total} records)</h3>
+    ${summarize("Loan Types", loanTypeCounts, loanTypeLabels)}
+    ${summarize("Loan Purposes", loanPurposeCounts, loanPurposeLabels)}
+    ${summarize("Action Taken", actionTakenCounts, actionTakenLabels)}
+  `;
 }
 
 
