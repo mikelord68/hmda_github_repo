@@ -3,10 +3,15 @@ export async function handler(event, context) {
 
   try {
     const response = await fetch(url);
+
     if (!response.ok) {
       return {
         statusCode: response.status,
-        body: JSON.stringify({ error: "Failed to fetch institutions." })
+        body: JSON.stringify({ error: "Failed to fetch institutions." }),
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Content-Type": "application/json"
+        }
       };
     }
 
@@ -23,7 +28,11 @@ export async function handler(event, context) {
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Server error fetching lenders." })
+      body: JSON.stringify({ error: "Server error fetching lenders." }),
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json"
+      }
     };
   }
 }
