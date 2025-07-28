@@ -56,15 +56,18 @@ function fetchLenders() {
 
 
 async function fetchLARData(lei) {
-  displayOutput("Awaiting LAR data...");
+  displayOutput("Fetching LAR data directly from FFIEC...");
+
   try {
-    const response = await fetch(`/.netlify/functions/fetchLAR?lei=${lei}`);
+    const url = `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?institution=${lei}&year=2023`;
+    const response = await fetch(url);
+    
     if (!response.ok) {
-      const text = await response.text();
-      throw new Error(text);
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
     }
 
     const csvText = await response.text();
+    
     Papa.parse(csvText, {
       header: true,
       skipEmptyLines: true,
@@ -84,6 +87,7 @@ async function fetchLARData(lei) {
     displayOutput(`Failed to fetch LAR data: ${error.message}`);
   }
 }
+
 
 function buildLARSummary(data) {
   const loanTypeLabels = {
