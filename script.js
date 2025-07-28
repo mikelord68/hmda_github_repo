@@ -1,4 +1,6 @@
 
+document.addEventListener('DOMContentLoaded', () => {
+
 async function fetchLARData(lei) {
     const year = "2023";
     const url = `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?institution=${lei}&year=${year}`;
@@ -134,4 +136,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         reader.readAsText(file);
     });
+});
+
 });
