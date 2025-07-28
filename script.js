@@ -1,154 +1,137 @@
-document.addEventListener("DOMContentLoaded", () => {
-  fetchLenders();
-
-  document.getElementById("fetchLAR").addEventListener("click", () => {
-    const dropdown = document.getElementById("lenderDropdown");
-    const lei = dropdown.value;
-    if (!lei) {
-      displayOutput("Please select a lender.");
-      return;
-    }
-    fetchLARData(lei);
-  });
-
-  document.getElementById("larFile").addEventListener("change", (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      Papa.parse(e.target.result, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          const data = results.data;
-          if (!data || data.length === 0) {
-            displayOutput("No LAR records found.");
-            return;
-          }
-          const summaryHtml = buildLARSummary(data);
-          displayOutput(summaryHtml);
-        }
-      });
-    };
-    reader.readAsText(file);
-  });
-});
-
-function fetchLenders() {
-  fetch("/.netlify/functions/fetchLenders")
-    .then((res) => res.json())
-    .then((data) => {
-      const lenders = data.institutions || data.lenders || [];
-      const dropdown = document.getElementById("lenderDropdown");
-      lenders.forEach(lender => {
-        const option = document.createElement("option");
-        option.value = lender.lei;
-        option.textContent = lender.name;
-        dropdown.appendChild(option);
-      });
-    })
-    .catch((err) => {
-      console.error(err);
-      displayOutput("Failed to load lender list.");
-    });
-}
 
 async function fetchLARData(lei) {
-  displayOutput("Awaiting LAR data...");
-  try {
-    const response = await fetch(`/.netlify/functions/fetchLAR?lei=${lei}`);
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(text);
-    }
-
-    const csvText = await response.text();
-    Papa.parse(csvText, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const data = results.data;
-        if (!data || data.length === 0) {
-          displayOutput("No LAR records found.");
-          return;
-        }
-
-        const summaryHtml = buildLARSummary(data);
-        displayOutput(summaryHtml);
-      }
-    });
-  } catch (error) {
-    console.error(error);
-    displayOutput(`Failed to fetch LAR data: ${error.message}`);
-  }
+    const year = "2023";
+    const url = `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?institution=${lei}&year=${year}`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch LAR data.");
+    const text = await response.text();
+    return Papa.parse(text, { header: true, skipEmptyLines: true }).data;
 }
 
-function buildLARSummary(data) {
-  const loanTypeLabels = {
-    "1": "Conventional",
-    "2": "FHA",
-    "3": "VA",
-    "4": "RHS or FSA"
-  };
-  const loanPurposeLabels = {
-    "1": "Home purchase",
-    "2": "Home improvement",
-    "4": "Refinancing",
-    "31": "Cash-out refinancing",
-    "32": "Other purpose"
-  };
+function getLoanTypeLabel(code) {
+    const map = {
+        '1': 'Conventional',
+        '2': 'FHA-insured',
+        '3': 'VA-guaranteed',
+        '4': 'USDA Rural Housing Service'
+    };
+    return map[code] || `Code ${code}`;
+}
 
-  const actionTakenLabels = {
-    "1": "Loan originated",
-    "2": "Application approved but not accepted",
-    "3": "Application denied",
-    "4": "Application withdrawn by applicant",
-    "5": "File closed for incompleteness",
-    "6": "Purchased loan",
-    "7": "Preapproval request denied",
-    "8": "Preapproval request approved but not accepted"
-  };
+function getLoanPurposeLabel(code) {
+    const map = {
+        '1': 'Home purchase',
+        '2': 'Home improvement',
+        '4': 'Refinancing',
+        '31': 'Cash-out refinancing',
+        '32': 'Other purpose'
+    };
+    return map[code] || `Code ${code}`;
+}
 
-  const countBy = (field) => {
-    const counts = {};
+function getActionTakenLabel(code) {
+    const map = {
+        '1': 'Loan originated',
+        '2': 'Application approved but not accepted',
+        '3': 'Application denied',
+        '4': 'Application withdrawn by applicant',
+        '5': 'File closed for incompleteness',
+        '6': 'Purchased loan',
+        '7': 'Preapproval request denied',
+        '8': 'Preapproval request approved but not accepted'
+    };
+    return map[code] || `Code ${code}`;
+}
+
+function summarizeLAR(data) {
+    const summary = {
+        total: data.length,
+        loanTypeCounts: {},
+        loanPurposeCounts: {},
+        actionTakenCounts: {},
+        loanAmounts: []
+    };
+
     data.forEach(row => {
-      const value = row[field]?.trim() || "(missing)";
-      counts[value] = (counts[value] || 0) + 1;
+        const loanType = row.loan_type;
+        const loanPurpose = row.loan_purpose;
+        const actionTaken = row.action_taken;
+        const amount = parseFloat(row.loan_amount_000s);
+
+        summary.loanTypeCounts[loanType] = (summary.loanTypeCounts[loanType] || 0) + 1;
+        summary.loanPurposeCounts[loanPurpose] = (summary.loanPurposeCounts[loanPurpose] || 0) + 1;
+        summary.actionTakenCounts[actionTaken] = (summary.actionTakenCounts[actionTaken] || 0) + 1;
+        if (!isNaN(amount)) summary.loanAmounts.push(amount);
     });
-    return counts;
-  };
 
-  const total = data.length;
-  const loanTypeCounts = countBy("loan_type");
-  const loanPurposeCounts = countBy("loan_purpose");
-  const actionTakenCounts = countBy("action_taken");
+    summary.avgLoanAmount = summary.loanAmounts.length > 0
+        ? (summary.loanAmounts.reduce((a, b) => a + b, 0) / summary.loanAmounts.length).toFixed(1)
+        : 'N/A';
 
-  const loanAmounts = data.map(row => parseFloat(row.loan_amount_000s)).filter(n => !isNaN(n));
-  const avgLoanAmount = loanAmounts.length
-    ? (loanAmounts.reduce((a, b) => a + b, 0) / loanAmounts.length).toFixed(2)
-    : "N/A";
+    return summary;
+}
 
-  const summarize = (label, counts, labelsMap = {}) => {
-    let html = `<h4>${label}</h4><ul>`;
-    for (const [key, val] of Object.entries(counts)) {
-      const pct = ((val / total) * 100).toFixed(1);
-      const labelText = labelsMap[key] || key;
-      html += `<li>${labelText}: ${val} (${pct}%)</li>`;
+function buildLARSummary(summary) {
+    let html = `<h3>LAR Summary (${summary.total} records)</h3>`;
+
+    html += "<h4>Loan Types</h4><ul>";
+    for (const [type, count] of Object.entries(summary.loanTypeCounts)) {
+        const label = getLoanTypeLabel(type);
+        const pct = ((count / summary.total) * 100).toFixed(1);
+        html += `<li>${label}: ${count} (${pct}%)</li>`;
     }
     html += "</ul>";
+
+    html += "<h4>Loan Purposes</h4><ul>";
+    for (const [purpose, count] of Object.entries(summary.loanPurposeCounts)) {
+        const label = getLoanPurposeLabel(purpose);
+        const pct = ((count / summary.total) * 100).toFixed(1);
+        html += `<li>${label}: ${count} (${pct}%)</li>`;
+    }
+    html += "</ul>";
+
+    html += "<h4>Action Taken</h4><ul>";
+    for (const [action, count] of Object.entries(summary.actionTakenCounts)) {
+        const label = getActionTakenLabel(action);
+        const pct = ((count / summary.total) * 100).toFixed(1);
+        html += `<li>${label}: ${count} (${pct}%)</li>`;
+    }
+    html += "</ul>";
+
+    html += `<h4>Average Loan Amount</h4><p>${summary.avgLoanAmount} × $1,000</p>`;
+
     return html;
-  };
-
-  return `
-    <h3>LAR Summary (${total} records)</h3>
-    ${summarize("Loan Types", loanTypeCounts)}
-    ${summarize("Loan Purposes", loanPurposeCounts)}
-    ${summarize("Action Taken", actionTakenCounts, actionTakenLabels)}
-    <h4>Average Loan Amount</h4>
-    <p>${avgLoanAmount} × $1,000</p>
-  `;
 }
 
-function displayOutput(content) {
-  document.getElementById("output").innerHTML = content;
-}
+document.addEventListener('DOMContentLoaded', () => {
+    const lenderSelect = document.getElementById('lenderSelect');
+    const fetchButton = document.getElementById('fetchLAR');
+    const summaryContainer = document.getElementById('summary');
+    const fileInput = document.getElementById('larFileInput');
+
+    fetchButton.addEventListener('click', async () => {
+        const selectedOption = lenderSelect.options[lenderSelect.selectedIndex];
+        const lei = selectedOption.value;
+        if (!lei) return;
+        try {
+            const data = await fetchLARData(lei);
+            const summary = summarizeLAR(data);
+            summaryContainer.innerHTML = buildLARSummary(summary);
+        } catch (err) {
+            summaryContainer.innerHTML = `<p>Error: ${err.message}</p>`;
+        }
+    });
+
+    fileInput.addEventListener('change', event => {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const text = e.target.result;
+            const data = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
+            const summary = summarizeLAR(data);
+            summaryContainer.innerHTML = buildLARSummary(summary);
+        };
+        reader.readAsText(file);
+    });
+});
