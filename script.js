@@ -58,7 +58,7 @@ function fetchLenders() {
 async function fetchLARData(lei) {
   displayOutput("Awaiting LAR data...");
   try {
-    const response = await fetch(`/.netlify/functions/fetchLAR-background?lei=${lei}`);
+    const response = await fetch(`/.netlify/functions/fetchLAR?lei=${lei}`);
     if (!response.ok) {
       const text = await response.text();
       throw new Error(text);
@@ -81,7 +81,7 @@ async function fetchLARData(lei) {
     });
   } catch (error) {
     console.error(error);
-    displayOutput(`Failed to  fetch LAR data: ${error.message}`);
+    displayOutput(`Failed to fetch LAR data: ${error.message}`);
   }
 }
 
@@ -137,12 +137,13 @@ function buildLARSummary(data) {
     return html;
   };
 
-  return `
-    <h3>LAR Summary (${total} records)</h3>
-    ${summarize("Loan Types", loanTypeCounts, loanTypeLabels)}
-    ${summarize("Loan Purposes", loanPurposeCounts, loanPurposeLabels)}
-    ${summarize("Action Taken", actionTakenCounts, actionTakenLabels)}
-  `;
+return `
+  <h3>LAR Summary (${total} records)</h3>
+  ${summarize("Action Taken", actionTakenCounts, actionTakenLabels)}
+  ${summarize("Loan Purposes", loanPurposeCounts, loanPurposeLabels)}
+  ${summarize("Loan Types", loanTypeCounts, loanTypeLabels)}
+`;
+
 }
 
 
