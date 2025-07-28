@@ -58,7 +58,7 @@ function fetchLenders() {
 async function fetchLARData(lei) {
   displayOutput("Awaiting LAR data...");
   try {
-    const response = await fetch(`/.netlify/functions/fetchLAR?lei=${lei}`);
+    const response = await fetch(`/.netlify/functions/fetchLAR-background?lei=${lei}`);
     if (!response.ok) {
       const text = await response.text();
       throw new Error(text);
