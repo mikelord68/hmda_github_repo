@@ -33,12 +33,13 @@ document.addEventListener("DOMContentLoaded", () => {
     reader.readAsText(file);
   });
 });
-
 function fetchLenders() {
   fetch("/.netlify/functions/fetchLenders")
     .then((res) => res.json())
     .then((data) => {
-      const lenders = data.institutions || data.lenders || [];
+      const lenders = (data.institutions || data.lenders || []).sort((a, b) =>
+        a.name.localeCompare(b.name)
+      );
       const dropdown = document.getElementById("lenderDropdown");
       lenders.forEach(lender => {
         const option = document.createElement("option");
@@ -52,6 +53,7 @@ function fetchLenders() {
       displayOutput("Failed to load lender list.");
     });
 }
+
 
 async function fetchLARData(lei) {
   displayOutput("Awaiting LAR data...");
