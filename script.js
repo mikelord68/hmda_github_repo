@@ -81,7 +81,7 @@ async function fetchLARData(lei) {
     });
   } catch (error) {
     console.error(error);
-    displayOutput(`Failed to fetch LAR data: ${error.message}`);
+    displayOutput(`Failed to  fetch LAR data: ${error.message}`);
   }
 }
 
