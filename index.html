@@ -3,19 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>HMDA 2024 Lender Summary</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <title>LAR Summary Viewer</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>HMDA 2024 Summary Report</h1>
-  <label for="lender">Choose a Lender:</label>
+  <h1>HMDA LAR Summary</h1>
+
+  <label for="lenderDropdown">Select Lender:</label>
   <select id="lenderDropdown">
-    <option value="">Loading...</option>
+    <option value="">-- Select a lender --</option>
   </select>
-  <button onclick="fetchLAR()">Fetch LAR</button>
-  <input type="file" id="larFile" accept=".txt" />
-  <pre id="output">Awaiting LAR data...</pre>
+  <button id="fetchLAR">Fetch LAR</button>
+
+  <h2>Or Upload a Local LAR File:</h2>
+  <input type="file" id="larFile" accept=".txt,.csv" />
+
+  <div id="output"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
-
