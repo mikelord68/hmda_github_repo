@@ -7,8 +7,7 @@ export async function handler(event, context) {
       body: JSON.stringify({ error: "Missing LEI parameter." })
     };
   }
-
-  const url = `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv/${lei}/2024`;
+const url = `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?institution=${lei}&year=2024`;
   try {
     const res = await fetch(url);
     if (!res.ok) {
