@@ -1,42 +1,63 @@
-
-async function fetchInstitutions() {
+async function fetchLenders() {
   try {
-    const res = await fetch("/.netlify/functions/fetchLenders");
-    const data = await res.json();
-    const select = document.getElementById("lenderDropdown");
-    select.innerHTML = "";
-    data.institutions.sort((a, b) => a.name.localeCompare(b.name));
-    data.institutions.forEach(filer => {
-      const opt = document.createElement("option");
-      opt.value = filer.lei;
-      opt.textContent = filer.name;
-      select.appendChild(opt);
-    });
-  } catch (err) {
-    console.error("Error loading lender list", err);
-    document.getElementById("lenderDropdown").innerHTML = '<option>Error loading lenders</option>';
+    const response = await fetch("/.netlify/functions/fetchLenders");
+    if (!response.ok) throw new Error("Failed to fetch lenders.");
+    const data = await response.json();
+    populateLenderDropdown(data.lenders);
+  } catch (error) {
+    console.error(error);
+    displayOutput("Failed to load lender list.");
   }
 }
 
-async function fetchLAR() {
-  const lei = document.getElementById("lenderDropdown").value;
-  if (!lei) return alert("Please select a lender.");
-  const url = `/.netlify/functions/fetchLAR?lei=${lei}`;
+function populateLenderDropdown(lenders) {
+  const datalist = document.getElementById("lenderList");
+  datalist.innerHTML = "";
+
+  lenders.forEach(lender => {
+    const option = document.createElement("option");
+    option.value = lender.name;
+    option.dataset.lei = lender.lei;
+    datalist.appendChild(option);
+  });
+}
+
+function displayOutput(content) {
+  const outputDiv = document.getElementById("output");
+  outputDiv.textContent = content;
+}
+
+async function fetchLARData(lei) {
   try {
-    const res = await fetch(url);
-    const text = await res.text();
-    document.getElementById("output").textContent = text.slice(0, 1000) + "\n... (truncated)";
-  } catch (err) {
-    alert("Failed to fetch LAR file.");
+    const response = await fetch(`/.netlify/functions/fetchLAR?lei=${lei}`);
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text);
+    }
+    const data = await response.text();
+    displayOutput(data);
+  } catch (error) {
+    console.error(error);
+    displayOutput(`Failed to fetch LAR data: ${error.message}`);
   }
 }
 
-document.getElementById("larFile").addEventListener("change", function(e) {
-  const reader = new FileReader();
-  reader.onload = function() {
-    document.getElementById("output").textContent = reader.result.slice(0, 1000) + "\n... (truncated)";
-  };
-  reader.readAsText(e.target.files[0]);
+document.getElementById("fetchLAR").addEventListener("click", () => {
+  const input = document.getElementById("lenderSelect");
+  const selectedName = input.value;
+  const datalist = document.getElementById("lenderList");
+
+  const match = Array.from(datalist.options).find(
+    (opt) => opt.value === selectedName
+  );
+
+  if (!match) {
+    displayOutput("Lender not found.");
+    return;
+  }
+
+  const lei = match.dataset.lei;
+  fetchLARData(lei);
 });
 
-fetchInstitutions();
+document.addEventListener("DOMContentLoaded", fetchLenders);
