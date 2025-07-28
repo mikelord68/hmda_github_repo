@@ -126,11 +126,6 @@ function buildLARSummary(data) {
   const loanPurposeCounts = countBy("loan_purpose");
   const actionTakenCounts = countBy("action_taken");
 
-  const loanAmounts = data.map(row => parseFloat(row.loan_amount_000s)).filter(n => !isNaN(n));
-  const avgLoanAmount = loanAmounts.length
-    ? (loanAmounts.reduce((a, b) => a + b, 0) / loanAmounts.length).toFixed(2)
-    : "N/A";
-
   const summarize = (label, counts, labelsMap = {}) => {
     let html = `<h4>${label}</h4><ul>`;
     for (const [key, val] of Object.entries(counts)) {
@@ -147,10 +142,9 @@ function buildLARSummary(data) {
     ${summarize("Loan Types", loanTypeCounts, loanTypeLabels)}
     ${summarize("Loan Purposes", loanPurposeCounts, loanPurposeLabels)}
     ${summarize("Action Taken", actionTakenCounts, actionTakenLabels)}
-    <h4>Average Loan Amount</h4>
-    <p>${avgLoanAmount} × $1,000</p>
   `;
 }
+
 
 
 function displayOutput(content) {
