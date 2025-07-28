@@ -1,3 +1,33 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const fetchButton = document.getElementById("fetchLAR");
+  const lenderInput = document.getElementById("lenderSelect");
+
+  if (!fetchButton || !lenderInput) {
+    console.error("Missing DOM elements. Make sure #fetchLAR and #lenderSelect exist.");
+    return;
+  }
+
+  fetchButton.addEventListener("click", () => {
+    const selectedName = lenderInput.value;
+    const datalist = document.getElementById("lenderList");
+
+    const match = Array.from(datalist.options).find(
+      (opt) => opt.value === selectedName
+    );
+
+    if (!match) {
+      displayOutput("Lender not found.");
+      return;
+    }
+
+    const lei = match.dataset.lei;
+    fetchLARData(lei);
+  });
+
+  fetchLenders(); // Load dropdown options
+});
+
+// Moved from global scope
 async function fetchLenders() {
   try {
     const response = await fetch("/.netlify/functions/fetchLenders");
@@ -28,6 +58,7 @@ function displayOutput(content) {
 }
 
 async function fetchLARData(lei) {
+  displayOutput("Awaiting LAR data...");
   try {
     const response = await fetch(`/.netlify/functions/fetchLAR?lei=${lei}`);
     if (!response.ok) {
@@ -41,23 +72,3 @@ async function fetchLARData(lei) {
     displayOutput(`Failed to fetch LAR data: ${error.message}`);
   }
 }
-
-document.getElementById("fetchLAR").addEventListener("click", () => {
-  const input = document.getElementById("lenderSelect");
-  const selectedName = input.value;
-  const datalist = document.getElementById("lenderList");
-
-  const match = Array.from(datalist.options).find(
-    (opt) => opt.value === selectedName
-  );
-
-  if (!match) {
-    displayOutput("Lender not found.");
-    return;
-  }
-
-  const lei = match.dataset.lei;
-  fetchLARData(lei);
-});
-
-document.addEventListener("DOMContentLoaded", fetchLenders);

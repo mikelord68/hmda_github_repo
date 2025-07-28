@@ -4,18 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>HMDA 2024 Lender Summary</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>HMDA 2024 Summary Report</h1>
-  <label for="lender">Choose a Lender:</label>
-  <select id="lenderDropdown">
-    <option value="">Loading...</option>
-  </select>
-  <button onclick="fetchLAR()">Fetch LAR</button>
-  <input type="file" id="larFile" accept=".txt" />
-  <pre id="output">Awaiting LAR data...</pre>
-  <script src="script.js"></script>
-</body>
-</html>
+  <div class="container">
+    <h1>HMDA 2024 Summary Report</h1>
 
+    <label for="lenderSelect">Choose a Lender:</label><br/>
+    <input list="lenderList" id="lenderSelect" placeholder="Start typing lender name..." />
+    <datalist id="lenderList">
+      <!-- Options will be populated dynamically -->
+    </datalist><br/><br/>
+
+    <button id="fetchLAR">Fetch LAR</button><br/><br/>
+
+    <label for="fileUpload">Choose File</label>
+    <input type="file" id="fileUpload" /><br/><br/>
+
+    <div id="output" class="output">Awaiting LAR data...</div>
+  </div>
