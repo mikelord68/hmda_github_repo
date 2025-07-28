@@ -1,38 +1,38 @@
 document.addEventListener("DOMContentLoaded", () => {
   const fetchButton = document.getElementById("fetchLAR");
   const lenderInput = document.getElementById("lenderSelect");
+  const datalist = document.getElementById("lenderList");
 
-  if (!fetchButton || !lenderInput) {
-    console.error("Missing DOM elements. Make sure #fetchLAR and #lenderSelect exist.");
+  if (!fetchButton || !lenderInput || !datalist) {
+    console.error("Missing DOM elements.");
     return;
   }
 
+  // Load lenders into the datalist
+  fetchLenders();
+
+  // When Fetch LAR button is clicked
   fetchButton.addEventListener("click", () => {
     const selectedName = lenderInput.value;
-    const datalist = document.getElementById("lenderList");
-
-    const match = Array.from(datalist.options).find(
-      (opt) => opt.value === selectedName
-    );
+    const match = Array.from(datalist.options).find(opt => opt.value === selectedName);
 
     if (!match) {
-      displayOutput("Lender not found.");
+      displayOutput("Lender not found. Please select a valid lender.");
       return;
     }
 
     const lei = match.dataset.lei;
     fetchLARData(lei);
   });
-
-  fetchLenders(); // Load dropdown options
 });
 
-// Moved from global scope
 async function fetchLenders() {
   try {
+    console.log("Fetching lender list...");
     const response = await fetch("/.netlify/functions/fetchLenders");
     if (!response.ok) throw new Error("Failed to fetch lenders.");
     const data = await response.json();
+    console.log("Fetched lender data:", data.lenders);
     populateLenderDropdown(data.lenders);
   } catch (error) {
     console.error(error);
