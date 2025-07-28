@@ -24,26 +24,22 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchLARData(lei);
   });
 
-  fetchLenders();
+  fetchLenders(); // Load dropdown options
 });
 
 async function fetchLenders() {
+  displayOutput("Fetching lender list...");
   try {
-    console.log("Fetching lender list...");
     const response = await fetch("/.netlify/functions/fetchLenders");
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch lenders: ${response.statusText}`);
-    }
-
+    if (!response.ok) throw new Error("Failed to fetch lenders.");
     const data = await response.json();
-    console.log("Fetched full data:", data);
+    console.log("Fetched full data: ", data);
 
-    if (!Array.isArray(data.lenders)) {
-      throw new Error("Lenders list missing or malformed in response.");
+    if (!Array.isArray(data.institutions)) {
+      throw new Error("Institutions list missing or malformed in response.");
     }
 
-    populateLenderDropdown(data.lenders);
+    populateLenderDropdown(data.institutions);
   } catch (error) {
     console.error("Error loading lenders:", error);
     displayOutput("Failed to load lender list.");
@@ -70,7 +66,7 @@ function displayOutput(content) {
 async function fetchLARData(lei) {
   displayOutput("Awaiting LAR data...");
   try {
-    const response = await fetch(`/.netlify/functions/fetchLAR?lei=${encodeURIComponent(lei)}`);
+    const response = await fetch(`/.netlify/functions/fetchLAR?lei=${lei}`);
     if (!response.ok) {
       const text = await response.text();
       throw new Error(text);
@@ -78,7 +74,7 @@ async function fetchLARData(lei) {
     const data = await response.text();
     displayOutput(data);
   } catch (error) {
-    console.error("Error fetching LAR data:", error);
+    console.error(error);
     displayOutput(`Failed to fetch LAR data: ${error.message}`);
   }
 }
