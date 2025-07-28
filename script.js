@@ -138,3 +138,16 @@ function buildLARSummary(data) {
 function displayOutput(content) {
   document.getElementById("output").innerHTML = content;
 }
+  const loanTypeLabels = {
+    "1": "Conventional",
+    "2": "FHA-insured",
+    "3": "VA-guaranteed",
+    "4": "USDA/RHS"
+  };
+  const loanPurposeLabels = {
+    "1": "Home purchase",
+    "2": "Home improvement",
+    "4": "Refinancing",
+    "31": "Cash-out refinancing"
+  };
+
