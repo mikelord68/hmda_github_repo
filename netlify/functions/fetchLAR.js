@@ -1,4 +1,3 @@
-
 export async function handler(event, context) {
   const lei = event.queryStringParameters.lei;
   if (!lei) {
@@ -7,7 +6,11 @@ export async function handler(event, context) {
       body: JSON.stringify({ error: "Missing LEI parameter." })
     };
   }
-const url = `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?institution=${lei}&year=2024`;
+
+  const url = `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?institution=${lei}&year=2024`;
+  console.log("Fetching LAR for LEI:", lei);
+  console.log("Requesting URL:", url);
+
   try {
     const res = await fetch(url);
     if (!res.ok) {
@@ -26,6 +29,7 @@ const url = `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?institution=${l
       }
     };
   } catch (err) {
+    console.error("Fetch error:", err);
     return {
       statusCode: 500,
       body: "Server error while fetching LAR data."
