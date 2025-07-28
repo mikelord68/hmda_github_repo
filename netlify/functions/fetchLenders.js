@@ -1,38 +1,21 @@
+
 export async function handler(event, context) {
-  const url = "https://ffiec.cfpb.gov/v2/data-browser-api/institutions/2024";
-
   try {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      return {
-        statusCode: response.status,
-        body: JSON.stringify({ error: "Failed to fetch institutions." }),
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Content-Type": "application/json"
-        }
-      };
-    }
-
-    const data = await response.json();
-
+    const res = await fetch("https://ffiec.cfpb.gov/v2/data-browser-api/view/filers?years=2024");
+    const data = await res.json();
     return {
       statusCode: 200,
-      body: JSON.stringify({ institutions: data.institutions }),
+      body: JSON.stringify(data),
       headers: {
         "Access-Control-Allow-Origin": "*",
         "Content-Type": "application/json"
       }
     };
-  } catch (error) {
+  } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Server error fetching lenders." }),
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-        "Content-Type": "application/json"
-      }
+      body: JSON.stringify({ error: "Failed to fetch lender data." })
     };
   }
 }
+
