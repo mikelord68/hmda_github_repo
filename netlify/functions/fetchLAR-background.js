@@ -1,42 +1,38 @@
-const fetch = require("node-fetch"); // or global fetch if using newer Netlify Node env
-
-exports.handler = async function(event, context, callback) {
-  const lei = event.queryStringParameters.lei;
+export async function handler(event, context) {
+  const lei = event.queryStringParameters?.lei;
   if (!lei) {
-    return callback(null, {
+    return {
       statusCode: 400,
-      body: "Missing LEI parameter."
-    });
+      body: JSON.stringify({ error: "Missing LEI parameter." })
+    };
   }
 
   const url = `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv?leis=${lei}&years=2024`;
-  console.log("Fetching LAR for LEI:", lei);
-  console.log("Requesting URL:", url);
 
   try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      return callback(null, {
-        statusCode: res.status,
-        body: `Failed to fetch LAR data: ${res.statusText}`
-      });
+    const response = await fetch(url); // native fetch (Node 18+)
+    if (!response.ok) {
+      return {
+        statusCode: response.status,
+        body: `Failed to fetch LAR data: ${response.statusText}`
+      };
     }
 
-    const csv = await res.text();
-
-    return callback(null, {
+    const text = await response.text();
+    return {
       statusCode: 200,
+      body: text,
       headers: {
-        "Content-Type": "text/csv",
-        "Access-Control-Allow-Origin": "*"
-      },
-      body: csv
-    });
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "text/plain"
+      }
+    };
   } catch (err) {
     console.error("Fetch error:", err);
-    return callback(null, {
+    return {
       statusCode: 500,
       body: "Server error while fetching LAR data."
-    });
+    };
   }
-};
+}
+
