@@ -5,9 +5,8 @@ async function fetchInstitutions() {
     const data = await res.json();
     const select = document.getElementById("lenderDropdown");
     select.innerHTML = "";
-   data.institutions.sort((a, b) => a.name.localeCompare(b.name));
-data.institutions.forEach(filer => {
-
+    data.institutions.sort((a, b) => a.name.localeCompare(b.name));
+    data.institutions.forEach(filer => {
       const opt = document.createElement("option");
       opt.value = filer.lei;
       opt.textContent = filer.name;
@@ -22,7 +21,7 @@ data.institutions.forEach(filer => {
 async function fetchLAR() {
   const lei = document.getElementById("lenderDropdown").value;
   if (!lei) return alert("Please select a lender.");
-  const url = `https://ffiec.cfpb.gov/v2/data-browser-api/view/csv/${lei}/2024`;
+  const url = `/.netlify/functions/fetchLAR?lei=${lei}`;
   try {
     const res = await fetch(url);
     const text = await res.text();
