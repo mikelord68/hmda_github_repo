@@ -84,6 +84,21 @@ async function fetchLARData(lei) {
 }
 
 function buildLARSummary(data) {
+  const loanTypeLabels = {
+    "1": "Conventional",
+    "2": "FHA-insured",
+    "3": "VA-guaranteed",
+    "4": "USDA Rural Housing Service or RHS"
+  };
+
+  const loanPurposeLabels = {
+    "1": "Home purchase",
+    "2": "Home improvement",
+    "4": "Refinancing",
+    "31": "Cash-out refinancing",
+    "32": "Other purpose"
+  };
+
   const actionTakenLabels = {
     "1": "Loan originated",
     "2": "Application approved but not accepted",
@@ -118,7 +133,7 @@ function buildLARSummary(data) {
     let html = `<h4>${label}</h4><ul>`;
     for (const [key, val] of Object.entries(counts)) {
       const pct = ((val / total) * 100).toFixed(1);
-      const labelText = labelsMap[key] || key;
+      const labelText = labelsMap[key] || `Code ${key}`;
       html += `<li>${labelText}: ${val} (${pct}%)</li>`;
     }
     html += "</ul>";
@@ -127,13 +142,14 @@ function buildLARSummary(data) {
 
   return `
     <h3>LAR Summary (${total} records)</h3>
-    ${summarize("Loan Types", loanTypeCounts)}
-    ${summarize("Loan Purposes", loanPurposeCounts)}
+    ${summarize("Loan Types", loanTypeCounts, loanTypeLabels)}
+    ${summarize("Loan Purposes", loanPurposeCounts, loanPurposeLabels)}
     ${summarize("Action Taken", actionTakenCounts, actionTakenLabels)}
     <h4>Average Loan Amount</h4>
     <p>${avgLoanAmount} × $1,000</p>
   `;
 }
+
 
 function displayOutput(content) {
   document.getElementById("output").innerHTML = content;
