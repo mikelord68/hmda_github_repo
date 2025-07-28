@@ -1,22 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>HMDA LAR Summary</title>
-    <link rel="stylesheet" href="styles.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HMDA 2024 Lender Summary</title>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-    <h1>HMDA LAR Summary</h1>
-    <label for="lenderSelect">Select Lender:</label>
-    <select id="lenderSelect"></select>
-    <button onclick="fetchLAR()">Fetch LAR</button>
-    <p>Or Upload a Local LAR File:</p>
-    <input type="file" id="larFileInput" accept=".csv" />
-
-    <div id="summary"></div>
-    <button id="downloadSummary" style="display:none;">Download Summary CSV</button>
-
-    <script src="script.js"></script>
+  <h1>HMDA 2024 Summary Report</h1>
+  <label for="lender">Choose a Lender:</label>
+  <select id="lenderDropdown">
+    <option value="">Loading...</option>
+  </select>
+  <button onclick="fetchLAR()">Fetch LAR</button>
+  <input type="file" id="larFile" accept=".txt" />
+  <pre id="output">Awaiting LAR data...</pre>
+  <script src="script.js"></script>
 </body>
 </html>
+
